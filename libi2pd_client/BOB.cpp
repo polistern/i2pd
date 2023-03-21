@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2013-2022, The PurpleI2P Project
+* Copyright (c) 2013-2023, The PurpleI2P Project
 *
 * This file is part of Purple i2pd project and licensed under BSD3
 *
@@ -647,6 +647,76 @@ namespace client
 		}
 		else
 			SendReplyError ("no nickname has been set");
+	}
+
+	void BOBCommandSession::PingCommandHandler (const char * operand, size_t len)
+	{
+		LogPrint (eLogDebug, "BOB: ping ", operand);
+
+		if (!*operand)
+		{
+			SendReplyError ("Empty Address");
+			return;
+		}
+
+		auto addr = context.GetAddressBook ().GetAddress (operand);
+		if (!addr)
+		{
+			LogPrint (eLogDebug, "BOB: lookup: Address Not found");
+			SendReplyError ("Address Not found");
+			return;
+		}
+
+		auto localDestination = m_CurrentDestination ? m_CurrentDestination->GetLocalDestination () : i2p::client::context.GetSharedLocalDestination ();
+		if (localDestination->IsReady())
+			LogPrint (eLogDebug, "BOB: ping: localDestination IsReady");
+
+		LogPrint (eLogDebug, "BOB: ping: LeaseSet found, starting ping");
+		uint64_t results[BOB_PING_DEFAULT_COUNT]{0}; // maybe for some math?
+		uint64_t time_sent = 0, time_recv = 0;
+		std::stringstream ss_res;
+
+		for (size_t i = 0; i < BOB_PING_DEFAULT_COUNT; i++)
+		{
+			if (addr->IsIdentHash ())
+				localDestination->SendPing(addr->identHash);
+			else
+				localDestination->SendPing(addr->blindedPublicKey);
+
+			time_sent = i2p::util::GetMillisecondsSinceEpoch ();
+			auto status = localDestination->WaitPong(BOB_PING_DEFAULT_TIMEOUT);
+			time_recv = i2p::util::GetMillisecondsSinceEpoch ();
+
+			std::stringstream ss_once;
+			ss_once << i << " ";
+			ss_res << " ";
+
+			if (status == std::cv_status::no_timeout)
+			{
+				results[i] = time_recv - time_sent;
+				LogPrint (eLogDebug, "BOB: ping #", i, ": ", results[i]);
+				ss_once << results[i];
+				ss_res << results[i];
+			}
+			else if (status == std::cv_status::timeout)
+			{
+				results[i] = 0;
+				LogPrint (eLogDebug, "BOB: ping #", i, ": timeout");
+				ss_once << "timeout";
+				ss_res << "timeout";
+			}
+			else
+			{
+				results[i] = 0;
+				LogPrint (eLogDebug, "BOB: ping #", i, ": unknown");
+				ss_once << "unknown";
+				ss_res << "unknown";
+			}
+			SendReplyOK (ss_once.str().c_str());
+			m_SendBuffer.consume (m_SendBuffer.size());
+		}
+		m_SendBuffer.consume (m_SendBuffer.size());
+		SendReplyOK (ss_res.str().c_str());
 	}
 
 	void BOBCommandSession::LookupCommandHandler (const char * operand, size_t len)

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2013-2022, The PurpleI2P Project
+* Copyright (c) 2013-2023, The PurpleI2P Project
 *
 * This file is part of Purple i2pd project and licensed under BSD3
 *
@@ -252,6 +252,7 @@ namespace client
 			std::shared_ptr<i2p::stream::Stream> CreateStream (std::shared_ptr<const i2p::data::LeaseSet> remote, int port = 0);
 			void SendPing (const i2p::data::IdentHash& to);
 			void SendPing (std::shared_ptr<const i2p::data::BlindedPublicKey> to);
+			std::cv_status WaitPong (size_t timeout);
 			void AcceptStreams (const i2p::stream::StreamingDestination::Acceptor& acceptor);
 			void StopAcceptingStreams ();
 			bool IsAcceptingStreams () const;

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2013-2020, The PurpleI2P Project
+* Copyright (c) 2013-2023, The PurpleI2P Project
 *
 * This file is part of Purple i2pd project and licensed under BSD3
 *
@@ -26,6 +26,9 @@ namespace i2p
 namespace client
 {
 	const size_t BOB_COMMAND_BUFFER_SIZE = 1024;
+	const size_t BOB_PING_DEFAULT_COUNT = 60;
+	const size_t BOB_PING_DEFAULT_TIMEOUT = 10;
+
 	const char BOB_COMMAND_ZAP[] = "zap";
 	const char BOB_COMMAND_QUIT[] = "quit";
 	const char BOB_COMMAND_START[] = "start";
@@ -41,6 +44,7 @@ namespace client
 	const char BOB_COMMAND_INHOST[] = "inhost";
 	const char BOB_COMMAND_INPORT[] = "inport";
 	const char BOB_COMMAND_QUIET[] = "quiet";
+	const char BOB_COMMAND_PING[] = "ping";
 	const char BOB_COMMAND_LOOKUP[] = "lookup";
 	const char BOB_COMMAND_LOOKUP_LOCAL[] = "lookuplocal";
 	const char BOB_COMMAND_CLEAR[] = "clear";
@@ -59,11 +63,12 @@ namespace client
 	const char BOB_HELP_GETKEYS[] = "getkeys - Return the keypair for the current nickname.";
 	const char BOB_HELP_SETKEYS[] = "setkeys <BASE64_KEYPAIR> - Sets the keypair for the current nickname.";
 	const char BOB_HELP_GETDEST[] = "getdest - Return the destination for the current nickname.";
-	const char BOB_HELP_OUTHOST[] = "outhost <HOSTNAME|IP> - Set the outhound hostname or IP.";
+	const char BOB_HELP_OUTHOST[] = "outhost <HOSTNAME|IP> - Set the outbound hostname or IP.";
 	const char BOB_HELP_OUTPORT[] = "outport <PORT_NUMBER> - Set the outbound port that nickname contacts.";
 	const char BOB_HELP_INHOST[] = "inhost <HOSTNAME|IP> - Set the inbound hostname or IP.";
 	const char BOB_HELP_INPORT[] = "inport <PORT_NUMBER> - Set the inbound port number nickname listens on.";
 	const char BOB_HELP_QUIET[] = "quiet <True|False> - Whether to send the incoming destination.";
+	const char BOB_HELP_PING[] = "ping <I2P_HOSTNAME> - Send ping requests to destination";
 	const char BOB_HELP_LOOKUP[] = "lookup <I2P_HOSTNAME> - Look up an I2P hostname.";
 	const char BOB_HELP_CLEAR[] = "clear - Clear the current nickname out of the list.";
 	const char BOB_HELP_LIST[] = "list - List all tunnels.";
@@ -208,6 +213,7 @@ namespace client
 			void InhostCommandHandler (const char * operand, size_t len);
 			void InportCommandHandler (const char * operand, size_t len);
 			void QuietCommandHandler (const char * operand, size_t len);
+			void PingCommandHandler (const char * operand, size_t len);
 			void LookupCommandHandler (const char * operand, size_t len);
 			void LookupLocalCommandHandler (const char * operand, size_t len);
 			void ClearCommandHandler (const char * operand, size_t len);

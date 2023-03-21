@@ -1228,6 +1228,11 @@ namespace client
 			});
 	}
 
+	std::cv_status ClientDestination::WaitPong (size_t timeout)
+	{
+		return m_StreamingDestination->WaitPong(timeout);
+	}
+
 	std::shared_ptr<i2p::stream::StreamingDestination> ClientDestination::GetStreamingDestination (int port) const
 	{
 		if (port)

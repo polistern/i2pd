@@ -142,7 +142,7 @@ namespace stream
 		{	
 			m_SendStreamID = packet->GetReceiveStreamID ();
 			if (!m_RemoteIdentity && packet->GetNACKCount () == 8 && // first incoming packet
-			    memcmp (packet->GetNACKs (), m_LocalDestination.GetOwner ()->GetIdentHash (), 32))
+				memcmp (packet->GetNACKs (), m_LocalDestination.GetOwner ()->GetIdentHash (), 32))
 			{
 				LogPrint (eLogWarning, "Streaming: Destination mismatch for ", m_LocalDestination.GetOwner ()->GetIdentHash ().ToBase32 ());
 				m_LocalDestination.DeletePacket (packet);
@@ -512,7 +512,7 @@ namespace stream
 			// make sure that AsycReceive complete
 			auto s = shared_from_this();
 			m_Service.post ([s]()
-		    {
+			{
 				s->m_ReceiveTimer.cancel ();
 			});
 			int i = 0;
@@ -1212,6 +1212,7 @@ namespace stream
 			{
 				// pong
 				LogPrint (eLogInfo, "Streaming: Pong received rSID=", packet->GetReceiveStreamID ());
+				m_PongNotifier.notify_one ();
 				DeletePacket (packet);
 				return;
 			}
@@ -1315,6 +1316,13 @@ namespace stream
 		s->SendPing ();
 	}
 
+	std::cv_status StreamingDestination::WaitPong (size_t timeout)
+	{
+		std::mutex pongMutex;
+		std::unique_lock<std::mutex> lk (pongMutex);
+		return m_PongNotifier.wait_for (lk, std::chrono::seconds(timeout));
+	}
+
 	std::shared_ptr<Stream> StreamingDestination::CreateNewIncomingStream (uint32_t receiveStreamID)
 	{
 		auto s = std::make_shared<Stream> (m_Owner->GetService (), *this);
@@ -1409,7 +1417,7 @@ namespace stream
 		std::unique_lock<std::mutex> l(streamAcceptMutex);
 		AcceptOnce (
 			[&streamAccept, &streamAcceptMutex, &stream](std::shared_ptr<i2p::stream::Stream> s)
-		    {
+			{
 				stream = s;
 				std::unique_lock<std::mutex> l(streamAcceptMutex);
 				streamAccept.notify_all ();

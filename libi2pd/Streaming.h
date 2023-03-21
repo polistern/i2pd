@@ -273,6 +273,7 @@ namespace stream
 
 			std::shared_ptr<Stream> CreateNewOutgoingStream (std::shared_ptr<const i2p::data::LeaseSet> remote, int port = 0);
 			void SendPing (std::shared_ptr<const i2p::data::LeaseSet> remote);
+			std::cv_status WaitPong (size_t timeout);
 			void DeleteStream (std::shared_ptr<Stream> stream);
 			bool DeleteStream (uint32_t recvStreamID);
 			void SetAcceptor (const Acceptor& acceptor);
@@ -311,6 +312,7 @@ namespace stream
 			std::list<std::shared_ptr<Stream> > m_PendingIncomingStreams;
 			boost::asio::deadline_timer m_PendingIncomingTimer;
 			std::unordered_map<uint32_t, std::list<Packet *> > m_SavedPackets; // receiveStreamID->packets, arrived before SYN
+			std::condition_variable m_PongNotifier;
 
 			i2p::util::MemoryPool<Packet> m_PacketsPool;
 			i2p::util::MemoryPool<I2NPMessageBuffer<I2NP_MAX_MESSAGE_SIZE> > m_I2NPMsgsPool;
